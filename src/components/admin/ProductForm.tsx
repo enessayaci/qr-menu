@@ -128,14 +128,19 @@ export function ProductForm({
           />
         </label>
         <p className="mt-2 text-xs text-muted">JPG, PNG, WEBP veya GIF. En fazla 4 MB.</p>
-        {preview || product?.imageUrl ? (
+        {(preview || (product?.imageUrl && !removeImage)) ? (
           <button
             type="button"
             onClick={clearImage}
-            className="mt-3 text-sm text-rose hover:underline"
+            className="mt-3 w-full rounded-2xl border border-rose/40 bg-rose/10 px-4 py-2.5 text-sm text-rose transition hover:bg-rose/20"
           >
             Fotoğrafı kaldır
           </button>
+        ) : null}
+        {removeImage ? (
+          <p className="mt-2 text-xs text-muted">
+            Kayıttan sonra fotoğraf silinecek.
+          </p>
         ) : null}
       </div>
 
