@@ -1,6 +1,6 @@
 import { formatPrice } from "@/lib/format";
 import { cn } from "@/lib/cn";
-import { ProductImage } from "@/components/ProductImage";
+import { ProductThumb } from "@/components/menu/ProductThumb";
 
 type Product = {
   id: string;
@@ -29,28 +29,36 @@ export function ProductItem({
       )}
     >
       {product.imageUrl ? (
-        <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-xl bg-line sm:h-20 sm:w-20">
-          <ProductImage src={product.imageUrl} alt={product.name} fill />
-        </div>
+        <ProductThumb src={product.imageUrl} alt={product.name} />
       ) : null}
 
       <div className="min-w-0 flex-1">
-        <div className="flex items-baseline gap-2">
+        <div
+          className={cn(
+            "flex flex-wrap items-baseline-last gap-x-2",
+            isFeatured ? "text-[1.55rem] leading-tight" : "text-[1.05rem] leading-snug",
+          )}
+        >
           <h3
             className={cn(
-              "shrink-0 tracking-wide",
+              "min-w-0 max-w-[calc(100%-5.5rem)] wrap-break-word",
               isFeatured
-                ? "font-serif text-[1.35rem] font-bold text-olive uppercase tracking-[0.12em]"
-                : "text-[1.05rem] font-medium text-ink",
+                ? "font-display font-extrabold tracking-[0.08em] text-olive"
+                : "font-medium text-ink",
             )}
           >
             {product.name}
           </h3>
           <span
-            className="mb-1 min-w-4 flex-1 border-b border-dotted border-olive/35"
             aria-hidden
+            className="mb-[0.22em] min-w-4 flex-1 border-b border-dotted border-olive/35"
           />
-          <span className="shrink-0 text-[1.05rem] font-semibold text-olive tabular-nums">
+          <span
+            className={cn(
+              "shrink-0 font-semibold text-olive tabular-nums",
+              isFeatured && "font-display font-extrabold tracking-[0.04em]",
+            )}
+          >
             {formatPrice(product.price)}
           </span>
         </div>

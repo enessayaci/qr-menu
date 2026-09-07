@@ -3,18 +3,20 @@
 @theme inline {
   --color-cream: #111111;
   --color-paper: #1a1a1a;
-  /* ürün adları / genel yazı: hafif turuncu */
-  --color-ink: #f2d2a4;
-  --color-muted: #b89468;
-  /* başlıklar: menüdeki turuncu */
-  --color-olive: #ff9a1a;
-  --color-olive-dark: #e08410;
-  --color-brass: #ff9a1a;
+  /* ürün adları — örnek menüdeki gibi beyaz */
+  --color-ink: #f5f5f5;
+  /* açıklamalar */
+  --color-muted: #9a9a9a;
+  /* başlıklar / fiyat — turuncu */
+  --color-olive: #ff6a00;
+  --color-olive-dark: #e05d00;
+  --color-brass: #ff6a00;
   --color-line: #2c2c2c;
   --color-rose: #e07070;
   --font-sans: var(--font-sans);
   --font-serif: var(--font-serif);
   --font-script: var(--font-script);
+  --font-display: var(--font-display);
 }
 
 html {
@@ -47,5 +49,14 @@ button {
   body {
     background: white;
     color: black;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
   }
 }

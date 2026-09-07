@@ -105,9 +105,6 @@ export default async function MenuPage({
             <p className="font-[family-name:var(--font-script)] text-[2.35rem] leading-none text-olive">
               By Balet
             </p>
-            <p className="mt-1 text-[9px] tracking-[0.28em] text-ink uppercase">
-              Cafe & Bistro
-            </p>
           </div>
         </div>
 
@@ -135,20 +132,13 @@ export default async function MenuPage({
             const next = blocks[index + 1];
 
             if (block.type === "category") {
-              const afterFeatured =
-                prev?.type === "product" && prev.product.featured;
-              const hasFollowing = index < blocks.length - 1;
               return (
                 <section
                   key={`cat-${block.id}`}
                   id={block.slug}
-                  className={
-                    afterFeatured
-                      ? `scroll-mt-20 pt-16${hasFollowing ? " pb-10" : ""}`
-                      : `scroll-mt-20 pt-10${hasFollowing ? " pb-10" : ""}`
-                  }
+                  className="scroll-mt-20 py-10"
                 >
-                  <h2 className="text-center font-serif text-[1.65rem] font-bold tracking-[0.22em] text-olive uppercase">
+                  <h2 className="text-center font-display text-[2rem] font-extrabold tracking-[0.08em] text-olive uppercase">
                     {block.name}
                   </h2>
                   <div className="mx-auto mt-2 mb-6 h-px w-16 bg-olive/60" />

@@ -1,5 +1,10 @@
 import type { Metadata } from "next";
-import { Great_Vibes, Outfit, Source_Sans_3 } from "next/font/google";
+import {
+  Barlow_Condensed,
+  Great_Vibes,
+  Outfit,
+  Source_Sans_3,
+} from "next/font/google";
 import { prisma } from "@/lib/db";
 import "./globals.css";
 
@@ -7,6 +12,13 @@ const script = Great_Vibes({
   subsets: ["latin"],
   weight: "400",
   variable: "--font-script",
+});
+
+/* örnek menüdeki MENÜLER / İÇECEKLER başlıkları */
+const display = Barlow_Condensed({
+  subsets: ["latin", "latin-ext"],
+  weight: ["700", "800"],
+  variable: "--font-display",
 });
 
 const serif = Source_Sans_3({
@@ -49,7 +61,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="tr"
-      className={`${script.variable} ${serif.variable} ${sans.variable} h-full antialiased`}
+      className={`${script.variable} ${display.variable} ${serif.variable} ${sans.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-cream text-ink">{children}</body>
     </html>
