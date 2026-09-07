@@ -36,9 +36,10 @@ ENV DATABASE_URL=file:/app/data/prod.db
 
 WORKDIR /app
 
-COPY --from=builder /app/public ./public
+# standalone önce; public sonra (üzerine yazılmasın)
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
+COPY --from=builder /app/public ./public
 COPY --from=builder /app/prisma ./prisma
 
 # Full production node_modules (includes Prisma CLI deps)

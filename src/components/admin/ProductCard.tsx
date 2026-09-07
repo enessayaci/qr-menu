@@ -1,7 +1,7 @@
-import Image from "next/image";
 import Link from "next/link";
 import { deleteProduct, toggleProductAvailable } from "@/app/actions/products";
 import { DeleteButton } from "@/components/admin/DeleteButton";
+import { ProductImage } from "@/components/ProductImage";
 import { formatPrice } from "@/lib/format";
 import { cn } from "@/lib/cn";
 
@@ -19,13 +19,7 @@ export function ProductCard({ product }: { product: Product }) {
     <article className="overflow-hidden rounded-3xl border border-line bg-paper">
       <div className="relative aspect-[4/3] bg-cream">
         {product.imageUrl ? (
-          <Image
-            src={product.imageUrl}
-            alt={product.name}
-            fill
-            sizes="(max-width: 768px) 100vw, 33vw"
-            className="object-cover"
-          />
+          <ProductImage src={product.imageUrl} alt={product.name} fill />
         ) : (
           <div className="flex h-full flex-col items-center justify-center gap-1 text-muted">
             <span className="text-sm">Fotoğraf yok</span>

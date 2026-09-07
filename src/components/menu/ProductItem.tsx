@@ -1,6 +1,6 @@
 import { formatPrice } from "@/lib/format";
 import { cn } from "@/lib/cn";
-import Image from "next/image";
+import { ProductImage } from "@/components/ProductImage";
 
 type Product = {
   id: string;
@@ -21,13 +21,7 @@ export function ProductItem({ product }: { product: Product }) {
     >
       {product.imageUrl ? (
         <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-xl bg-line sm:h-20 sm:w-20">
-          <Image
-            src={product.imageUrl}
-            alt={product.name}
-            fill
-            sizes="80px"
-            className="object-cover"
-          />
+          <ProductImage src={product.imageUrl} alt={product.name} fill />
         </div>
       ) : null}
 

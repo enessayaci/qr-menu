@@ -32,6 +32,13 @@ export async function generateMetadata(): Promise<Metadata> {
         template: `%s · ${name}`,
       },
       description: restaurant?.tagline || "Dijital QR menü",
+      icons: {
+        icon: [
+          { url: "/icon.svg", type: "image/svg+xml" },
+          { url: "/favicon.png", sizes: "32x32", type: "image/png" },
+        ],
+        apple: [{ url: "/apple-icon.png", sizes: "180x180", type: "image/png" }],
+      },
     };
   } catch {
     return { title: "Menü" };
