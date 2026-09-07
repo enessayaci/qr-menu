@@ -2,9 +2,7 @@ services:
   web:
     build: .
     container_name: by-balet-menu
-    ports:
-      # Yerel ağ / test için. Sadece Cloudflare Tunnel kullanacaksanız kaldırabilirsiniz.
-      - "3000:3000"
+    # Dışarıya host portu yok — erişim sadece Cloudflare Tunnel ile
     env_file:
       - .env
     environment:
