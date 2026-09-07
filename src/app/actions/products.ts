@@ -15,6 +15,20 @@ async function nextSortOrder(categoryId: string) {
   return (last?.sortOrder ?? 0) + 1;
 }
 
+async function fileFromForm(formData: FormData): Promise<File | null> {
+  const image = formData.get("image");
+  if (image instanceof File && image.size > 0) return image;
+  if (image && typeof image === "object" && "arrayBuffer" in image) {
+    const blob = image as Blob;
+    if (blob.size > 0) {
+      return new File([blob], "upload.jpg", {
+        type: blob.type || "image/jpeg",
+      });
+    }
+  }
+  return null;
+}
+
 export async function saveProduct(formData: FormData) {
   await requireAdmin();
 
@@ -24,31 +38,28 @@ export async function saveProduct(formData: FormData) {
   const price = Number(formData.get("price"));
   const categoryId = String(formData.get("categoryId") ?? "");
   const available = formData.get("available") === "on";
-  const existingImage = String(formData.get("existingImage") ?? "") || null;
-  const image = formData.get("image");
+  const removeImage = formData.get("removeImage") === "on";
+  const upload = await fileFromForm(formData);
 
   if (!name || !categoryId || Number.isNaN(price) || price < 0) {
     throw new Error("Ürün adı, kategori ve geçerli bir fiyat gerekli.");
   }
 
-  let imageUrl = existingImage;
-  if (image instanceof File && image.size > 0) {
-    imageUrl = await saveUpload(image);
-    if (existingImage && existingImage !== imageUrl) {
-      await deleteUpload(existingImage);
+  const current = id
+    ? await prisma.product.findUnique({ where: { id } })
+    : null;
+  const previousUrl = current?.imageUrl ?? null;
+
+  let imageUrl = previousUrl;
+
+  if (upload) {
+    imageUrl = await saveUpload(upload);
+    if (previousUrl && previousUrl !== imageUrl) {
+      await deleteUpload(previousUrl);
     }
-  } else if (image && typeof image === "object" && "arrayBuffer" in image) {
-    // bazı ortamlarda File yerine Blob gelebilir
-    const blob = image as Blob;
-    if (blob.size > 0) {
-      const file = new File([blob], "upload.jpg", {
-        type: blob.type || "image/jpeg",
-      });
-      imageUrl = await saveUpload(file);
-      if (existingImage && existingImage !== imageUrl) {
-        await deleteUpload(existingImage);
-      }
-    }
+  } else if (removeImage && previousUrl) {
+    await deleteUpload(previousUrl);
+    imageUrl = null;
   }
 
   if (id) {
@@ -72,6 +83,7 @@ export async function saveProduct(formData: FormData) {
 
   revalidatePath("/");
   revalidatePath("/admin");
+  if (id) revalidatePath(`/admin/products/${id}`);
   redirect("/admin");
 }
 
@@ -85,6 +97,23 @@ export async function deleteProduct(formData: FormData) {
   await deleteUpload(product.imageUrl);
   revalidatePath("/");
   revalidatePath("/admin");
+}
+
+export async function removeProductImage(formData: FormData) {
+  await requireAdmin();
+  const id = String(formData.get("id") ?? "");
+  const product = await prisma.product.findUnique({ where: { id } });
+  if (!product?.imageUrl) return;
+
+  await deleteUpload(product.imageUrl);
+  await prisma.product.update({
+    where: { id },
+    data: { imageUrl: null },
+  });
+
+  revalidatePath("/");
+  revalidatePath("/admin");
+  revalidatePath(`/admin/products/${id}`);
 }
 
 export async function toggleProductAvailable(formData: FormData) {

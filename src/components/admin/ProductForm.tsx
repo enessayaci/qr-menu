@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { cn } from "@/lib/cn";
 
 type Category = { id: string; name: string };
@@ -26,7 +26,15 @@ export function ProductForm({
   categories: Category[];
   product?: Product;
 }) {
+  const fileRef = useRef<HTMLInputElement>(null);
   const [preview, setPreview] = useState(product?.imageUrl ?? "");
+  const [removeImage, setRemoveImage] = useState(false);
+
+  function clearImage() {
+    setPreview("");
+    setRemoveImage(true);
+    if (fileRef.current) fileRef.current.value = "";
+  }
 
   return (
     <form
@@ -35,7 +43,7 @@ export function ProductForm({
       className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_280px]"
     >
       {product ? <input type="hidden" name="id" value={product.id} /> : null}
-      <input type="hidden" name="existingImage" value={product?.imageUrl ?? ""} />
+      {removeImage ? <input type="hidden" name="removeImage" value="on" /> : null}
 
       <div className="space-y-4">
         <label className="block">
@@ -105,17 +113,30 @@ export function ProductForm({
             <span>Fotoğraf seç</span>
           )}
           <input
+            ref={fileRef}
             name="image"
             type="file"
             accept="image/jpeg,image/png,image/webp,image/gif"
             className="sr-only"
             onChange={(event) => {
               const file = event.target.files?.[0];
-              if (file) setPreview(URL.createObjectURL(file));
+              if (file) {
+                setRemoveImage(false);
+                setPreview(URL.createObjectURL(file));
+              }
             }}
           />
         </label>
         <p className="mt-2 text-xs text-muted">JPG, PNG, WEBP veya GIF. En fazla 4 MB.</p>
+        {preview || product?.imageUrl ? (
+          <button
+            type="button"
+            onClick={clearImage}
+            className="mt-3 text-sm text-rose hover:underline"
+          >
+            Fotoğrafı kaldır
+          </button>
+        ) : null}
       </div>
 
       <div className="lg:col-span-2">

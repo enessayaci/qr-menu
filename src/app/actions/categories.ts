@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
 import { requireAdmin } from "@/app/actions/auth";
+import { deleteUpload } from "@/lib/upload";
 
 export async function createCategory(formData: FormData) {
   await requireAdmin();
@@ -40,7 +41,14 @@ export async function deleteCategory(formData: FormData) {
   const id = String(formData.get("id") ?? "");
   if (!id) return;
 
+  const products = await prisma.product.findMany({
+    where: { categoryId: id },
+    select: { imageUrl: true },
+  });
+
   await prisma.category.delete({ where: { id } });
+  await Promise.all(products.map((p) => deleteUpload(p.imageUrl)));
+
   revalidatePath("/");
   revalidatePath("/admin");
   revalidatePath("/admin/categories");
