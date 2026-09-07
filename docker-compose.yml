@@ -3,27 +3,22 @@ services:
     build: .
     container_name: by-balet-menu
     ports:
+      # Yerel ağ / test için. Sadece Cloudflare Tunnel kullanacaksanız kaldırabilirsiniz.
       - "3000:3000"
     env_file:
       - .env
     environment:
-      # SQLite kalıcı volume içinde
       DATABASE_URL: file:/app/data/prod.db
       NODE_ENV: production
       PORT: "3000"
       HOSTNAME: 0.0.0.0
-      # V8 heap sınırı — bellek şişmesinde container çöker, Pi takılmaz
       NODE_OPTIONS: --max-old-space-size=384
     volumes:
-      # Menü verisi (ürünler, fiyatlar)
       - ./data/db:/app/data
-      # Admin'den yüklenen ürün fotoğrafları
       - ./data/uploads:/app/public/uploads
-    # Geçici dosyalar için küçük tmpfs (disk doldurma riskini azaltır)
     tmpfs:
       - /tmp:size=64m,mode=1777
     restart: unless-stopped
-    # Kaynak tavanı: saldırı / sızıntıda sadece container etkilenir
     mem_limit: 512m
     mem_reservation: 128m
     cpus: 1.0
@@ -49,3 +44,22 @@ services:
       timeout: 5s
       retries: 5
       start_period: 40s
+
+  # Cloudflare Tunnel — router'da port açmadan alan adını Pi'ye bağlar
+  # .env içine CLOUDFLARE_TUNNEL_TOKEN ekleyin (Zero Trust → Tunnels → Install)
+  tunnel:
+    image: cloudflare/cloudflared:latest
+    container_name: by-balet-tunnel
+    command: tunnel --no-autoupdate run
+    environment:
+      TUNNEL_TOKEN: ${CLOUDFLARE_TUNNEL_TOKEN}
+    depends_on:
+      - web
+    restart: unless-stopped
+    mem_limit: 128m
+    cpus: 0.5
+    pids_limit: 64
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
