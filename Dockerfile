@@ -33,6 +33,7 @@ ENV NEXT_TELEMETRY_DISABLED=1
 ENV PORT=3000
 ENV HOSTNAME=0.0.0.0
 ENV DATABASE_URL=file:/app/data/prod.db
+ENV UPLOAD_DIR=/app/data/uploads
 
 WORKDIR /app
 
@@ -48,7 +49,7 @@ COPY --from=prod-deps /app/node_modules ./node_modules
 COPY scripts/seed-if-empty.mjs ./scripts/seed-if-empty.mjs
 COPY docker/entrypoint.sh ./docker/entrypoint.sh
 RUN chmod +x ./docker/entrypoint.sh \
-  && mkdir -p /app/data /app/public/uploads
+  && mkdir -p /app/data /app/data/uploads /app/public/uploads
 
 EXPOSE 3000
 ENTRYPOINT ["./docker/entrypoint.sh"]

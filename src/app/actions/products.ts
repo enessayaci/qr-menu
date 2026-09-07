@@ -37,6 +37,18 @@ export async function saveProduct(formData: FormData) {
     if (existingImage && existingImage !== imageUrl) {
       await deleteUpload(existingImage);
     }
+  } else if (image && typeof image === "object" && "arrayBuffer" in image) {
+    // bazı ortamlarda File yerine Blob gelebilir
+    const blob = image as Blob;
+    if (blob.size > 0) {
+      const file = new File([blob], "upload.jpg", {
+        type: blob.type || "image/jpeg",
+      });
+      imageUrl = await saveUpload(file);
+      if (existingImage && existingImage !== imageUrl) {
+        await deleteUpload(existingImage);
+      }
+    }
   }
 
   if (id) {

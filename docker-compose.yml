@@ -7,13 +7,14 @@ services:
       - .env
     environment:
       DATABASE_URL: file:/app/data/prod.db
+      UPLOAD_DIR: /app/data/uploads
       NODE_ENV: production
       PORT: "3000"
       HOSTNAME: 0.0.0.0
       NODE_OPTIONS: --max-old-space-size=384
     volumes:
       - ./data/db:/app/data
-      - ./data/uploads:/app/public/uploads
+      - ./data/uploads:/app/data/uploads
     tmpfs:
       - /tmp:size=64m,mode=1777
     restart: unless-stopped

@@ -29,7 +29,11 @@ export function ProductForm({
   const [preview, setPreview] = useState(product?.imageUrl ?? "");
 
   return (
-    <form action={action} className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_280px]">
+    <form
+      action={action}
+      encType="multipart/form-data"
+      className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_280px]"
+    >
       {product ? <input type="hidden" name="id" value={product.id} /> : null}
       <input type="hidden" name="existingImage" value={product?.imageUrl ?? ""} />
 
