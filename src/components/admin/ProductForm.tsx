@@ -11,7 +11,9 @@ type Product = {
   price: number;
   imageUrl: string | null;
   available: boolean;
-  categoryId: string;
+  featured?: boolean;
+  showInNav?: boolean;
+  categoryId: string | null;
 };
 
 const field =
@@ -29,12 +31,15 @@ export function ProductForm({
   const fileRef = useRef<HTMLInputElement>(null);
   const [preview, setPreview] = useState(product?.imageUrl ?? "");
   const [removeImage, setRemoveImage] = useState(false);
+  const [categoryId, setCategoryId] = useState(product?.categoryId ?? "");
 
   function clearImage() {
     setPreview("");
     setRemoveImage(true);
     if (fileRef.current) fileRef.current.value = "";
   }
+
+  const isLone = !categoryId;
 
   return (
     <form
@@ -76,10 +81,11 @@ export function ProductForm({
             <span className="mb-1.5 block text-sm text-muted">Kategori</span>
             <select
               name="categoryId"
-              required
-              defaultValue={product?.categoryId ?? categories[0]?.id}
+              value={categoryId}
+              onChange={(event) => setCategoryId(event.target.value)}
               className={field}
             >
+              <option value="">Kategorisiz (ana menüde)</option>
               {categories.map((category) => (
                 <option key={category.id} value={category.id}>
                   {category.name}
@@ -97,6 +103,32 @@ export function ProductForm({
           />
           <span className="text-sm">Menüde görünsün, satışta</span>
         </label>
+        {isLone ? (
+          <>
+            <label className="flex items-center gap-3 rounded-2xl border border-olive/30 bg-olive/5 px-4 py-3">
+              <input
+                name="showInNav"
+                type="checkbox"
+                defaultChecked={product?.showInNav ?? false}
+                className="size-4 accent-olive"
+              />
+              <span className="text-sm">
+                Yukarıda listele — üstteki kaydırılabilir menüde görünsün
+              </span>
+            </label>
+            <label className="flex items-center gap-3 rounded-2xl border border-olive/30 bg-olive/5 px-4 py-3">
+              <input
+                name="featured"
+                type="checkbox"
+                defaultChecked={product?.featured ?? false}
+                className="size-4 accent-olive"
+              />
+              <span className="text-sm">
+                Dikkat çekici ürün — başlık kategori gibi kalın turuncu
+              </span>
+            </label>
+          </>
+        ) : null}
       </div>
 
       <div>

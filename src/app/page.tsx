@@ -1,8 +1,43 @@
 import { prisma } from "@/lib/db";
+import { ensureCategorySlugs } from "@/app/actions/categories";
 import { CategoryNav } from "@/components/menu/CategoryNav";
 import { ProductItem } from "@/components/menu/ProductItem";
+import { slugify } from "@/lib/slug";
 
 export const dynamic = "force-dynamic";
+
+type MenuBlock =
+  | {
+      type: "category";
+      sortOrder: number;
+      id: string;
+      name: string;
+      slug: string;
+      products: Array<{
+        id: string;
+        name: string;
+        description: string;
+        price: number;
+        imageUrl: string | null;
+        available: boolean;
+        featured: boolean;
+        showInNav: boolean;
+      }>;
+    }
+  | {
+      type: "product";
+      sortOrder: number;
+      product: {
+        id: string;
+        name: string;
+        description: string;
+        price: number;
+        imageUrl: string | null;
+        available: boolean;
+        featured: boolean;
+        showInNav: boolean;
+      };
+    };
 
 export default async function MenuPage({
   searchParams,
@@ -10,7 +45,9 @@ export default async function MenuPage({
   searchParams: Promise<{ masa?: string }>;
 }) {
   const { masa } = await searchParams;
-  const [restaurant, categories] = await Promise.all([
+  await ensureCategorySlugs();
+
+  const [restaurant, categories, loneProducts] = await Promise.all([
     prisma.restaurant.findUnique({ where: { id: "default" } }),
     prisma.category.findMany({
       orderBy: { sortOrder: "asc" },
@@ -18,10 +55,47 @@ export default async function MenuPage({
         products: { orderBy: { sortOrder: "asc" } },
       },
     }),
+    prisma.product.findMany({
+      where: { categoryId: null },
+      orderBy: { sortOrder: "asc" },
+    }),
   ]);
 
   const name = restaurant?.name ?? "By Balet";
-  const visibleCategories = categories.filter((c) => c.products.length > 0);
+
+  const blocks: MenuBlock[] = [
+    ...categories
+      .filter((c) => c.products.length > 0)
+      .map((c) => ({
+        type: "category" as const,
+        sortOrder: c.sortOrder,
+        id: c.id,
+        name: c.name,
+        slug: c.slug || c.id,
+        products: c.products,
+      })),
+    ...loneProducts.map((p) => ({
+      type: "product" as const,
+      sortOrder: p.sortOrder,
+      product: p,
+    })),
+  ].sort((a, b) => a.sortOrder - b.sortOrder);
+
+  const navItems = blocks.flatMap((block) => {
+    if (block.type === "category") {
+      return [{ id: block.id, name: block.name, slug: block.slug }];
+    }
+    if (block.product.showInNav) {
+      return [
+        {
+          id: block.product.id,
+          name: block.product.name,
+          slug: slugify(block.product.name),
+        },
+      ];
+    }
+    return [];
+  });
 
   return (
     <div className="flex flex-1 flex-col">
@@ -48,38 +122,68 @@ export default async function MenuPage({
         ) : null}
       </header>
 
-      {visibleCategories.length > 0 ? (
-        <CategoryNav
-          categories={visibleCategories.map((c) => ({
-            id: c.id,
-            name: c.name,
-          }))}
-        />
-      ) : null}
+      {navItems.length > 0 ? <CategoryNav categories={navItems} /> : null}
 
       <main className="mx-auto w-full max-w-2xl flex-1 px-5 pb-16">
-        {visibleCategories.length === 0 ? (
+        {blocks.length === 0 ? (
           <p className="py-20 text-center text-muted">
             Menü henüz hazırlanıyor. Lütfen birazdan tekrar bakın.
           </p>
         ) : (
-          visibleCategories.map((category) => (
-            <section
-              key={category.id}
-              id={`kategori-${category.id}`}
-              className="scroll-mt-20 pt-10"
-            >
-              <h2 className="text-center font-serif text-[1.65rem] font-bold tracking-[0.22em] text-olive uppercase">
-                {category.name}
-              </h2>
-              <div className="mx-auto mt-2 mb-6 h-px w-16 bg-olive/60" />
-              <div>
-                {category.products.map((product) => (
-                  <ProductItem key={product.id} product={product} />
-                ))}
-              </div>
-            </section>
-          ))
+          blocks.map((block, index) => {
+            const prev = blocks[index - 1];
+            const next = blocks[index + 1];
+
+            if (block.type === "category") {
+              const afterFeatured =
+                prev?.type === "product" && prev.product.featured;
+              const hasFollowing = index < blocks.length - 1;
+              return (
+                <section
+                  key={`cat-${block.id}`}
+                  id={block.slug}
+                  className={
+                    afterFeatured
+                      ? `scroll-mt-20 pt-16${hasFollowing ? " pb-10" : ""}`
+                      : `scroll-mt-20 pt-10${hasFollowing ? " pb-10" : ""}`
+                  }
+                >
+                  <h2 className="text-center font-serif text-[1.65rem] font-bold tracking-[0.22em] text-olive uppercase">
+                    {block.name}
+                  </h2>
+                  <div className="mx-auto mt-2 mb-6 h-px w-16 bg-olive/60" />
+                  <div>
+                    {block.products.map((product) => (
+                      <ProductItem key={product.id} product={product} />
+                    ))}
+                  </div>
+                </section>
+              );
+            }
+
+            const product = block.product;
+            const inNav = product.showInNav;
+            const anchor = inNav ? slugify(product.name) : undefined;
+            const besideCategory =
+              product.featured &&
+              (prev?.type === "category" || next?.type === "category");
+
+            return (
+              <section
+                key={`prod-${product.id}`}
+                id={anchor}
+                className={
+                  besideCategory
+                    ? "scroll-mt-20 py-8"
+                    : inNav
+                      ? "scroll-mt-20 pt-4"
+                      : "pt-2"
+                }
+              >
+                <ProductItem product={product} featured={product.featured} />
+              </section>
+            );
+          })
         )}
       </main>
 

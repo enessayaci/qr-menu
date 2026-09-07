@@ -11,7 +11,8 @@ type Product = {
   price: number;
   imageUrl: string | null;
   available: boolean;
-  category: { name: string };
+  featured: boolean;
+  category: { name: string } | null;
 };
 
 export function ProductCard({ product }: { product: Product }) {
@@ -34,7 +35,8 @@ export function ProductCard({ product }: { product: Product }) {
       </div>
       <div className="p-4">
         <p className="text-xs tracking-wide text-brass uppercase">
-          {product.category.name}
+          {product.category?.name ??
+            (product.featured ? "Dikkat çekici" : "Kategorisiz")}
         </p>
         <div className="mt-1 flex items-baseline justify-between gap-3">
           <h2 className="font-serif text-xl font-semibold">{product.name}</h2>

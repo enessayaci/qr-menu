@@ -20,22 +20,22 @@ async function main() {
   });
 
   const menuler = await prisma.category.create({
-    data: { name: "Menüler", sortOrder: 1 },
+    data: { name: "Menüler", slug: "menuler", sortOrder: 1 },
   });
   const kahvalti = await prisma.category.create({
-    data: { name: "Kahvaltı", sortOrder: 2 },
+    data: { name: "Kahvaltı", slug: "kahvalti", sortOrder: 2 },
   });
   const yemekler = await prisma.category.create({
-    data: { name: "Yemekler", sortOrder: 3 },
+    data: { name: "Yemekler", slug: "yemekler", sortOrder: 3 },
   });
   const soguk = await prisma.category.create({
-    data: { name: "Soğuk İçecekler", sortOrder: 4 },
+    data: { name: "Soğuk İçecekler", slug: "soguk-icecekler", sortOrder: 4 },
   });
   const sicak = await prisma.category.create({
-    data: { name: "Sıcak İçecekler", sortOrder: 5 },
+    data: { name: "Sıcak İçecekler", slug: "sicak-icecekler", sortOrder: 5 },
   });
   const tatlilar = await prisma.category.create({
-    data: { name: "Tatlılar", sortOrder: 6 },
+    data: { name: "Tatlılar", slug: "tatlilar", sortOrder: 6 },
   });
 
   await prisma.product.createMany({

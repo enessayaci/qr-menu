@@ -15,7 +15,7 @@ if [ -d /app/public/uploads ]; then
 fi
 
 echo ">> Veritabanı senkronize ediliyor..."
-node ./node_modules/prisma/build/index.js db push --skip-generate --schema=./prisma/schema.prisma
+node ./node_modules/prisma/build/index.js db push --skip-generate --accept-data-loss --schema=./prisma/schema.prisma
 
 echo ">> İlk kurulum kontrolü..."
 node ./scripts/seed-if-empty.mjs

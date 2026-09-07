@@ -8,7 +8,7 @@ import { cn } from "@/lib/cn";
 
 const links = [
   { href: "/admin", label: "Ürünler" },
-  { href: "/admin/categories", label: "Kategoriler" },
+  { href: "/admin/order", label: "Sıralama" },
   { href: "/admin/qr", label: "QR Kodlar" },
   { href: "/admin/settings", label: "Restoran" },
 ];
@@ -44,7 +44,7 @@ export function AdminNav({ restaurantName }: { restaurantName: string }) {
           const active =
             link.href === "/admin"
               ? pathname === "/admin" || pathname.startsWith("/admin/products")
-              : pathname === link.href;
+              : pathname === link.href || pathname.startsWith(`${link.href}/`);
           return (
             <Link
               key={link.href}

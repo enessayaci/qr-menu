@@ -3,21 +3,21 @@
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/cn";
 
-type Category = { id: string; name: string };
+type Category = { id: string; name: string; slug: string };
 
 export function CategoryNav({ categories }: { categories: Category[] }) {
-  const [active, setActive] = useState(categories[0]?.id ?? "");
+  const [active, setActive] = useState(categories[0]?.slug ?? "");
 
   useEffect(() => {
     const syncActive = () => {
       const offset = 120;
-      let current = categories[0]?.id ?? "";
+      let current = categories[0]?.slug ?? "";
 
       for (const category of categories) {
-        const el = document.getElementById(`kategori-${category.id}`);
+        const el = document.getElementById(category.slug);
         if (!el) continue;
         if (el.getBoundingClientRect().top - offset <= 0) {
-          current = category.id;
+          current = category.slug;
         }
       }
 
@@ -35,7 +35,11 @@ export function CategoryNav({ categories }: { categories: Category[] }) {
 
   useEffect(() => {
     const pill = document.querySelector<HTMLElement>(`[data-cat="${active}"]`);
-    pill?.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
+    pill?.scrollIntoView({
+      behavior: "smooth",
+      inline: "center",
+      block: "nearest",
+    });
   }, [active]);
 
   return (
@@ -44,12 +48,12 @@ export function CategoryNav({ categories }: { categories: Category[] }) {
         {categories.map((category) => (
           <a
             key={category.id}
-            href={`#kategori-${category.id}`}
-            data-cat={category.id}
-            onClick={() => setActive(category.id)}
+            href={`#${category.slug}`}
+            data-cat={category.slug}
+            onClick={() => setActive(category.slug)}
             className={cn(
               "shrink-0 rounded-full px-4 py-1.5 text-sm tracking-wide transition",
-              active === category.id
+              active === category.slug
                 ? "bg-olive text-cream shadow-sm"
                 : "bg-paper text-muted hover:text-ink",
             )}

@@ -5,15 +5,7 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { deleteUpload, saveUpload } from "@/lib/upload";
 import { requireAdmin } from "@/app/actions/auth";
-
-async function nextSortOrder(categoryId: string) {
-  const last = await prisma.product.findFirst({
-    where: { categoryId },
-    orderBy: { sortOrder: "desc" },
-    select: { sortOrder: true },
-  });
-  return (last?.sortOrder ?? 0) + 1;
-}
+import { nextProductSortOrder } from "@/lib/menu-order";
 
 async function fileFromForm(formData: FormData): Promise<File | null> {
   const image = formData.get("image");
@@ -36,13 +28,16 @@ export async function saveProduct(formData: FormData) {
   const name = String(formData.get("name") ?? "").trim();
   const description = String(formData.get("description") ?? "").trim();
   const price = Number(formData.get("price"));
-  const categoryId = String(formData.get("categoryId") ?? "");
+  const categoryRaw = String(formData.get("categoryId") ?? "").trim();
+  const categoryId = categoryRaw || null;
   const available = formData.get("available") === "on";
+  const featured = formData.get("featured") === "on" && !categoryId;
+  const showInNav = formData.get("showInNav") === "on" && !categoryId;
   const removeImage = formData.get("removeImage") === "on";
   const upload = await fileFromForm(formData);
 
-  if (!name || !categoryId || Number.isNaN(price) || price < 0) {
-    throw new Error("Ürün adı, kategori ve geçerli bir fiyat gerekli.");
+  if (!name || Number.isNaN(price) || price < 0) {
+    throw new Error("Ürün adı ve geçerli bir fiyat gerekli.");
   }
 
   const current = id
@@ -62,10 +57,24 @@ export async function saveProduct(formData: FormData) {
     imageUrl = null;
   }
 
+  const categoryChanged = current && current.categoryId !== categoryId;
+
   if (id) {
     await prisma.product.update({
       where: { id },
-      data: { name, description, price, categoryId, available, imageUrl },
+      data: {
+        name,
+        description,
+        price,
+        categoryId,
+        available,
+        featured,
+        showInNav,
+        imageUrl,
+        ...(categoryChanged
+          ? { sortOrder: await nextProductSortOrder(categoryId) }
+          : {}),
+      },
     });
   } else {
     await prisma.product.create({
@@ -75,14 +84,18 @@ export async function saveProduct(formData: FormData) {
         price,
         categoryId,
         available,
+        featured,
+        showInNav,
         imageUrl,
-        sortOrder: await nextSortOrder(categoryId),
+        sortOrder: await nextProductSortOrder(categoryId),
       },
     });
   }
 
   revalidatePath("/");
   revalidatePath("/admin");
+  revalidatePath("/admin/order");
+  revalidatePath("/admin/categories");
   if (id) revalidatePath(`/admin/products/${id}`);
   redirect("/admin");
 }
@@ -97,6 +110,7 @@ export async function deleteProduct(formData: FormData) {
   await deleteUpload(product.imageUrl);
   revalidatePath("/");
   revalidatePath("/admin");
+  revalidatePath("/admin/order");
 }
 
 export async function removeProductImage(formData: FormData) {

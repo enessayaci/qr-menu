@@ -9,9 +9,18 @@ type Product = {
   price: number;
   imageUrl: string | null;
   available: boolean;
+  featured?: boolean;
 };
 
-export function ProductItem({ product }: { product: Product }) {
+export function ProductItem({
+  product,
+  featured = false,
+}: {
+  product: Product;
+  featured?: boolean;
+}) {
+  const isFeatured = featured || product.featured;
+
   return (
     <article
       className={cn(
@@ -27,7 +36,14 @@ export function ProductItem({ product }: { product: Product }) {
 
       <div className="min-w-0 flex-1">
         <div className="flex items-baseline gap-2">
-          <h3 className="shrink-0 text-[1.05rem] font-medium tracking-wide text-ink">
+          <h3
+            className={cn(
+              "shrink-0 tracking-wide",
+              isFeatured
+                ? "font-serif text-[1.35rem] font-bold text-olive uppercase tracking-[0.12em]"
+                : "text-[1.05rem] font-medium text-ink",
+            )}
+          >
             {product.name}
           </h3>
           <span

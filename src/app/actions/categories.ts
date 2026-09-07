@@ -4,24 +4,61 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
 import { requireAdmin } from "@/app/actions/auth";
 import { deleteUpload } from "@/lib/upload";
+import { slugify } from "@/lib/slug";
+import { nextMenuSortOrder } from "@/lib/menu-order";
+
+async function uniqueCategorySlug(name: string, excludeId?: string) {
+  const base = slugify(name);
+  let candidate = base;
+  let n = 2;
+
+  while (true) {
+    const existing = await prisma.category.findFirst({
+      where: {
+        slug: candidate,
+        ...(excludeId ? { NOT: { id: excludeId } } : {}),
+      },
+      select: { id: true },
+    });
+    if (!existing) return candidate;
+    candidate = `${base}-${n}`;
+    n += 1;
+  }
+}
+
+/** Eski kayıtlarda boş kalan slug'ları doldurur */
+export async function ensureCategorySlugs() {
+  const categories = await prisma.category.findMany({
+    select: { id: true, name: true, slug: true },
+  });
+
+  for (const category of categories) {
+    if (category.slug) continue;
+    const slug = await uniqueCategorySlug(category.name, category.id);
+    await prisma.category.update({
+      where: { id: category.id },
+      data: { slug },
+    });
+  }
+}
 
 export async function createCategory(formData: FormData) {
   await requireAdmin();
   const name = String(formData.get("name") ?? "").trim();
   if (!name) return;
 
-  const last = await prisma.category.findFirst({
-    orderBy: { sortOrder: "desc" },
-    select: { sortOrder: true },
-  });
-
   await prisma.category.create({
-    data: { name, sortOrder: (last?.sortOrder ?? 0) + 1 },
+    data: {
+      name,
+      slug: await uniqueCategorySlug(name),
+      sortOrder: await nextMenuSortOrder(),
+    },
   });
 
   revalidatePath("/");
   revalidatePath("/admin");
   revalidatePath("/admin/categories");
+  revalidatePath("/admin/order");
 }
 
 export async function updateCategory(formData: FormData) {
@@ -30,10 +67,17 @@ export async function updateCategory(formData: FormData) {
   const name = String(formData.get("name") ?? "").trim();
   if (!id || !name) return;
 
-  await prisma.category.update({ where: { id }, data: { name } });
+  await prisma.category.update({
+    where: { id },
+    data: {
+      name,
+      slug: await uniqueCategorySlug(name, id),
+    },
+  });
   revalidatePath("/");
   revalidatePath("/admin");
   revalidatePath("/admin/categories");
+  revalidatePath("/admin/order");
 }
 
 export async function deleteCategory(formData: FormData) {
@@ -52,6 +96,7 @@ export async function deleteCategory(formData: FormData) {
   revalidatePath("/");
   revalidatePath("/admin");
   revalidatePath("/admin/categories");
+  revalidatePath("/admin/order");
 }
 
 export async function moveCategory(formData: FormData) {
