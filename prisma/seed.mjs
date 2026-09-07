@@ -1,5 +1,10 @@
 import { PrismaClient } from "@prisma/client";
 
+/**
+ * Örnek / boş kurulum menüsü.
+ * Deploy: scripts/seed-if-empty.mjs yalnızca DB boşsa çalıştırır;
+ * dolu veritabanını her deployda silmez / yeniden yazmaz.
+ */
 const prisma = new PrismaClient();
 
 async function main() {
@@ -12,7 +17,8 @@ async function main() {
       id: "default",
       name: "By Balet",
       tagline: "Cafe & Bistro",
-      description: "Balıkesir Üniversitesi Çağış Kampüsü’nde taze ve doyurucu lezzetler.",
+      description:
+        "Balıkesir Üniversitesi Çağış Kampüsü’nde taze ve doyurucu lezzetler.",
       phone: "0507 685 20 99",
       address: "Balıkesir Üniversitesi Çağış Kampüsü, Çağış, 17 sk no: 2D",
       instagram: "",
@@ -21,9 +27,6 @@ async function main() {
 
   const menuler = await prisma.category.create({
     data: { name: "Menüler", slug: "menuler", sortOrder: 1 },
-  });
-  const kahvalti = await prisma.category.create({
-    data: { name: "Kahvaltı", slug: "kahvalti", sortOrder: 2 },
   });
   const yemekler = await prisma.category.create({
     data: { name: "Yemekler", slug: "yemekler", sortOrder: 3 },
@@ -36,6 +39,20 @@ async function main() {
   });
   const tatlilar = await prisma.category.create({
     data: { name: "Tatlılar", slug: "tatlilar", sortOrder: 6 },
+  });
+
+  // Kahvaltı: baskılı menüdeki gibi dikkat çekici, kategorisiz blok
+  await prisma.product.create({
+    data: {
+      name: "Kahvaltı Tabağı",
+      description:
+        "Yumurta, krem peynir, tereyağ, zeytin, reçel, patates, domates, çay",
+      price: 180,
+      featured: true,
+      showInNav: true,
+      sortOrder: 2,
+      categoryId: null,
+    },
   });
 
   await prisma.product.createMany({
@@ -86,33 +103,23 @@ async function main() {
       {
         name: "Nugget Menü",
         description: "Nugget, patates, şişe kola",
-        price: 220,
+        price: 250,
         sortOrder: 7,
         categoryId: menuler.id,
-      },
-
-      // Kahvaltı
-      {
-        name: "Kahvaltı Tabağı",
-        description:
-          "Yumurta, krem peynir, tereyağ, zeytin, reçel, patates, domates, çay",
-        price: 180,
-        sortOrder: 1,
-        categoryId: kahvalti.id,
       },
 
       // Yemekler
       {
         name: "Susurluk Tostu (Karışık)",
         description: "Patates, turşu",
-        price: 180,
+        price: 80,
         sortOrder: 1,
         categoryId: yemekler.id,
       },
       {
         name: "Susurluk Tostu (Peynirli)",
         description: "Patates, turşu",
-        price: 160,
+        price: 60,
         sortOrder: 2,
         categoryId: yemekler.id,
       },
@@ -154,7 +161,7 @@ async function main() {
       {
         name: "Et Burger",
         description: "",
-        price: 220,
+        price: 250,
         sortOrder: 8,
         categoryId: yemekler.id,
       },
@@ -208,7 +215,7 @@ async function main() {
         categoryId: yemekler.id,
       },
 
-      // Soğuk içecekler
+      // Soğuk içecekler (etiket fiyatları)
       {
         name: "Kutu Kola",
         description: "",
@@ -219,35 +226,35 @@ async function main() {
       {
         name: "Ice Tea",
         description: "",
-        price: 80,
+        price: 50,
         sortOrder: 2,
         categoryId: soguk.id,
       },
       {
         name: "Kutu Meyve Suyu",
         description: "",
-        price: 80,
+        price: 50,
         sortOrder: 3,
         categoryId: soguk.id,
       },
       {
         name: "Sade Soda",
         description: "",
-        price: 70,
+        price: 30,
         sortOrder: 4,
         categoryId: soguk.id,
       },
       {
         name: "Meyveli Soda",
         description: "",
-        price: 80,
+        price: 45,
         sortOrder: 5,
         categoryId: soguk.id,
       },
       {
         name: "Ayran",
         description: "",
-        price: 50,
+        price: 30,
         sortOrder: 6,
         categoryId: soguk.id,
       },
