@@ -1,0 +1,51 @@
+@import "tailwindcss";
+
+@theme inline {
+  --color-cream: #111111;
+  --color-paper: #1a1a1a;
+  /* ürün adları / genel yazı: hafif turuncu */
+  --color-ink: #f2d2a4;
+  --color-muted: #b89468;
+  /* başlıklar: menüdeki turuncu */
+  --color-olive: #ff9a1a;
+  --color-olive-dark: #e08410;
+  --color-brass: #ff9a1a;
+  --color-line: #2c2c2c;
+  --color-rose: #e07070;
+  --font-sans: var(--font-sans);
+  --font-serif: var(--font-serif);
+  --font-script: var(--font-script);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--color-cream);
+  color: var(--color-ink);
+  font-family: var(--font-sans), system-ui, sans-serif;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--color-olive) 35%, black);
+  color: white;
+}
+
+input,
+textarea,
+select,
+button {
+  font: inherit;
+}
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+
+  body {
+    background: white;
+    color: black;
+  }
+}

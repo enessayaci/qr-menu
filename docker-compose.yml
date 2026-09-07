@@ -1,0 +1,51 @@
+services:
+  web:
+    build: .
+    container_name: by-balet-menu
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+    environment:
+      # SQLite kalıcı volume içinde
+      DATABASE_URL: file:/app/data/prod.db
+      NODE_ENV: production
+      PORT: "3000"
+      HOSTNAME: 0.0.0.0
+      # V8 heap sınırı — bellek şişmesinde container çöker, Pi takılmaz
+      NODE_OPTIONS: --max-old-space-size=384
+    volumes:
+      # Menü verisi (ürünler, fiyatlar)
+      - ./data/db:/app/data
+      # Admin'den yüklenen ürün fotoğrafları
+      - ./data/uploads:/app/public/uploads
+    # Geçici dosyalar için küçük tmpfs (disk doldurma riskini azaltır)
+    tmpfs:
+      - /tmp:size=64m,mode=1777
+    restart: unless-stopped
+    # Kaynak tavanı: saldırı / sızıntıda sadece container etkilenir
+    mem_limit: 512m
+    mem_reservation: 128m
+    cpus: 1.0
+    pids_limit: 200
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    ulimits:
+      nofile:
+        soft: 1024
+        hard: 2048
+      nproc: 200
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:3000').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 40s

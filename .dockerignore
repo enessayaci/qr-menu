@@ -1,0 +1,27 @@
+# dependencies / build
+node_modules
+npm-debug.log*
+.next
+out
+build
+
+# git / editor
+.git
+.cursor
+.vscode
+*.md
+AGENTS.md
+CLAUDE.md
+
+# env & local data
+.env
+.env.*
+!.env.example
+prisma/*.db
+prisma/*.db-journal
+data
+public/uploads/*
+!public/uploads/.gitkeep
+
+.DS_Store
+coverage
