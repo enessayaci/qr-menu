@@ -8,6 +8,7 @@ import { cn } from "@/lib/cn";
 
 const links = [
   { href: "/admin", label: "Ürünler" },
+  { href: "/admin/categories", label: "Kategoriler" },
   { href: "/admin/order", label: "Sıralama" },
   { href: "/admin/qr", label: "QR Kodlar" },
   { href: "/admin/settings", label: "Restoran" },
